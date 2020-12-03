@@ -42,17 +42,18 @@ def part1():
     for d_x, d_y in traverses:
         tree_count = 0
         x = 0
-        for y in range(1, m.get_height(), d_y):
+        rows = range(0, m.get_height(), d_y)[1:]
+        print("doing rows",rows)
+        for y in rows:
             x += d_x
             if m.is_tree(x, y):
                 tree_count += 1
 
         a_t.append(tree_count)
-        print("You hit {} trees".format(tree_count))
+        print("You ({}, {}) hit {} trees".format(d_x, d_y, tree_count))
 
         total = reduce(lambda x,y: x*y, a_t)
 
     print("The total of {} is: {}".format(a_t, total))
-
 
 part1()
