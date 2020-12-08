@@ -30,13 +30,18 @@ def get_id(i: str) -> int:
 
     return row * 8 + col
 
+all_ids = []
 with open('input.txt') as data:
-    max_id = 0
     for row in data:
         new_id = get_id(row)
-        print("{}: {}".format(row, new_id))
-        if new_id > max_id:
-            print("(New/Old): ({}, {})".format(new_id, max_id))
-            max_id = new_id
-    
-    print("Max: {}".format(max_id))
+        all_ids.append(new_id)
+
+all_ids.sort()
+
+last = -1
+for i in all_ids:
+    if last != -1 and last != (i-1):
+        print("({}, -{}-, {})".format(last, (i-1), i))
+        last = i
+    else:
+        last = i
