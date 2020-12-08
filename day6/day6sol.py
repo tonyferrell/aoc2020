@@ -6,10 +6,12 @@ def an_group(g: List[str]):
     for person in g:
        for vote in person:
            ind = ord(vote) - base
-           letters[ind] = 1
+           letters[ind] += 1
 
-    print("Parsed {} to {}".format(g, letters))
-    return letters
+    r = map(lambda x: 1 if x == len(g) else 0, letters)
+
+    print("Parsed {} to {}".format(g, r))
+    return r
 
 def part1():
     count = 0
