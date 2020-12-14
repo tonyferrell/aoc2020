@@ -8,6 +8,18 @@ def print_board(g_board):
 
 
 class LifeBoard:
+    search_dirs = [
+        [0, -1],
+        [0, 1],
+        [-1, 0],
+        [1, 0],
+
+        [-1, -1],
+        [1, 1],
+        [1, -1],
+        [-1, 1]
+    ]
+
     def __init__(self, board: List[List[str]], hash: List[int]):
         self.board = board
         self.row_count = len(board)
@@ -58,23 +70,39 @@ class LifeBoard:
 
         return False
 
-    def get_adj_count(self, row: int, col: int) -> int:
+    def get_adj_count(self, row: int, col: int, verbose=False) -> int:
         adj = 0
-        row_mods = [-1, 0, 1]
-        col_mods = [[-1, 0, 1], [-1, 1], [-1, 0, 1]]
-        for idx, d_r in enumerate(row_mods):
-            n_r = row + d_r
-            if n_r < 0 or n_r >= self.row_count:
-                continue
+        for d_r, d_c in self.search_dirs:
+            n_r = row
+            n_c = col
+            if verbose:
+                print("Looking for adjacents for ({}, {}) with delta ({}, {})".format(row, col, d_r, d_c))
+            while True:
+                n_r = n_r + d_r
+                n_c = n_c + d_c
 
-            for d_c in col_mods[idx]:
-                n_c = col + d_c
-                if n_c < 0 or n_c >= self.col_count:
+                if n_r < 0 or n_r >= self.row_count or n_c < 0 or n_c >= self.col_count:
+                    # No chairs this direction - we reached the end of the board
+                    break
+
+                next = self.board[n_r][n_c] 
+                if verbose:
+                    print("Checking ({}, {}) = {}".format(n_r, n_c, next))
+                if next == '.':
+                    if verbose:
+                        print("Floor - skipping")
+                    # This isn't a chair - keep looking
                     continue
 
-                if self.board[n_r][n_c] == '#':
+                if next == '#':
+                    if verbose:
+                        print("Occupied Chair")
                     adj += 1
 
+                break
+
+        if verbose:
+            print("### Total Adjacents: ({}, {}) = {}".format(row,col, adj))
         return adj
 
     def next_seating(self):
@@ -87,10 +115,11 @@ class LifeBoard:
                 curr = self.board[r][c]
                 new_seat = curr
                 
-                adj = self.get_adj_count(r,c)
+                verbose = False
+                adj = self.get_adj_count(r,c, verbose)
                 if curr == 'L' and adj == 0:
                     new_seat = '#'
-                elif curr == '#' and adj >= 4:
+                elif curr == '#' and adj >= 5:
                     new_seat = 'L'
 
                 row_hash = (row_hash << 1) | (1 if new_seat == '#' else 0)
@@ -109,10 +138,10 @@ class LifeBoard:
 def part1():
     prev = LifeBoard.build_input_board('input.txt')
 
-    for i in range(10000):
+    for i in range(1000):
+        print("Board {}".format(i))
+        # print(prev)
         next = prev.next_seating()
-        print("Next Board {}".format(i))
-        # print(next)
         if next == prev:
             print("Found Stable Board on iter {} with {} seats".format(i, next.full_seats()))
             print(next)
