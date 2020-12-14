@@ -15,8 +15,8 @@ class LifeBoard:
         self.hash_list = hash
 
     @classmethod
-    def build_input_board(cls):
-        with open('test.txt') as data:
+    def build_input_board(cls, file: str) -> 'LifeBoard':
+        with open(file) as data:
             board = []
             hash_list = []
             col_count = None
@@ -93,24 +93,28 @@ class LifeBoard:
                 elif curr == '#' and adj >= 4:
                     new_seat = 'L'
 
-                row_hash = (row_hash << 1) | 1 if new_seat == '#' else 0
+                row_hash = (row_hash << 1) | (1 if new_seat == '#' else 0)
                 new_row.append(new_seat)
 
             adj_board.append(new_row)
             hashes.append(row_hash)
 
         return LifeBoard(adj_board, hashes)
+    
+    def full_seats(self) -> int:
+        return sum([sum([1 if digit=='1' else 0 for digit in bin(n)[2:]]) for n in self.hash_list])
+
 
 
 def part1():
-    prev = LifeBoard.build_input_board()
+    prev = LifeBoard.build_input_board('input.txt')
 
-    for i in range(6):
+    for i in range(10000):
         next = prev.next_seating()
         print("Next Board {}".format(i))
-        print(next)
+        # print(next)
         if next == prev:
-            print("Found Stable Board on iter {}".format(i))
+            print("Found Stable Board on iter {} with {} seats".format(i, next.full_seats()))
             print(next)
             break
 
