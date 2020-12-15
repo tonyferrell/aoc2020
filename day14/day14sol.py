@@ -5,10 +5,6 @@ one_mask = 0
 
 curr_mask = ""
 mem = {}
-class Maskalicious:
-    def __init__(self, val, children = []):
-        self.val = val
-        self.children = children
     
 def expand_mask(mask, cum, gen_masks):
     if mask == "":
@@ -20,21 +16,23 @@ def expand_mask(mask, cum, gen_masks):
     cum = cum << 1
     if next_m == '1':
         cum = cum | 1
-        return [Maskalicious(cum, expand_mask(remain_m, cum, gen_masks))]
+        expand_mask(remain_m, cum, gen_masks)
+        return
     elif next_m == '0':
-        return [Maskalicious(cum, expand_mask(remain_m, cum, gen_masks))]
+        expand_mask(remain_m, cum, gen_masks)
+        return
     elif next_m == 'X':
-        return [Maskalicious(cum, [expand_mask(remain_m, cum, gen_masks), Maskalicious(cum | 1, expand_mask(remain_m, cum | 1, gen_masks))])]
+        expand_mask(remain_m, cum, gen_masks)
+        expand_mask(remain_m, cum | 1, gen_masks)
+        return
     else:
         raise Exception("Unknown Mask Char:", next_m)
 
-def exec_mask(line: str):
-    global zero_mask, one_mask, curr_mask
-    _, mask = line.split(' = ')
+def gen_one_and_zero_masks(mask):
     one_mask = 0
     zero_mask = 0
-    curr_mask = mask.strip()
-    for b in curr_mask:
+
+    for b in mask.strip():
         one_mask = one_mask << 1
         zero_mask = zero_mask << 1
 
@@ -49,6 +47,11 @@ def exec_mask(line: str):
             zero_mask |= 1
         else:
             raise Exception("Unexpected value: ", b)
+    return (zero_mask, one_mask)
+    
+def exec_mask(line: str):
+    _, mask = line.split(" = ")
+    curr_mask = mask.strip()
 
 mem_loc = re.compile("mem\[(\d+)\]")
 def exec_mem(line: str):
@@ -83,8 +86,17 @@ with open('test2.txt') as data:
 
 print("Memory Total: {}".format(sum([val for mem, val in mem.items()])))
 a_mask = "000000000000000000000000000000X1001X"
-a_val = "{:b}".format(42)
+a_val = 42
 masks = []
 expand_mask(a_mask, 0, masks)
 for i in masks:
-    print('Eeep: {:b}'.format(i))
+    n = a_val
+
+    zero_mask, one_mask = gen_one_and_zero_masks('{:b}'.format(i))
+
+    n &= zero_mask
+    n |= one_mask
+    print("#" * 25)
+    print("     {:9b}\n     {:9b}".format(zero_mask, one_mask))
+    print("val: {:9b}".format(a_val))
+    print("N:   {:9b} ({})".format(n, n))
