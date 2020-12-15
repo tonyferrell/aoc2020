@@ -29,11 +29,13 @@ def expand_mask(mask, val, accum, gen_masks):
     else:
         raise Exception("Unknown Mask Char:", next_m)
 
-def exec_mask(line: str):
+def exec_mask(line: str, verbose = False):
     global curr_mask
 
     _, mask = line.split(" = ")
     curr_mask = mask.strip()
+    if verbose:
+        print("Curr Mask: {}".format(curr_mask))
 
 def apply_mask(curr_mask: str, loc_v:int):
     loc_bin = "{:b}".format(loc_v)
@@ -47,10 +49,7 @@ def apply_mask(curr_mask: str, loc_v:int):
     return masks
 
 mem_loc = re.compile("mem\[(\d+)\]")
-def exec_mem(line: str):
-    verbose = True
-    if verbose:
-        print("line: ", line)
+def exec_mem(line: str, verbose = False):
     loc, val = line.split(" = ")
     val_i = int(val)
 
@@ -60,17 +59,18 @@ def exec_mem(line: str):
 
     mem_locs = apply_mask(curr_mask, loc_i)
     for loc in mem_locs:
-        print("mem[{}] = {}".format(loc, val_i))
+        if verbose:
+            print("mem[{}] = {}".format(loc, val_i))
         mem[loc] = val_i
 
     return
 
 with open('input.txt') as data:
     for line in data:
+        verbose = False
         if line.startswith('mem'):
-            exec_mem(line)
+            exec_mem(line, verbose)
         elif line.startswith('mask'):
-            exec_mask(line)
-            print("Curr Mask: {}".format(curr_mask))
+            exec_mask(line, verbose)
 
-print("Memory Total: {}".format(sum([val for mem, val in mem.items()])))
+print("Memory Total: {}".format(sum([val for _, val in mem.items()])))
